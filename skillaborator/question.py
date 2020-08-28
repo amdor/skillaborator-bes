@@ -1,27 +1,16 @@
 from flask import Response
-from random import randint
 from flask_restful import Resource, reqparse, abort
+from skillaborator.data_service import DataService
 
-QUESTIONS = [
-    {'id': '0', 'value': 'What is the difference between var and let?', 'level': 1, 'answers': [
-        {'id': "0", 'value': "Answer1"},
-        {'id': "1", 'value': "Answer2"},
-        {'id': "2", 'value': "Answer2"},
-        {
-            'id': "3", 'value': """Answer
-4 long multiline answer"""
-        }
-    ]},
-    {'value': 'What is block scope?', 'level': 1},
-    {'value': 'Is JavaScript object oriented?', 'level': 3},
-    {'value': 'What is prototypical inheritance?', 'level': 2},
-]
+data_service = DataService()
 
 
 class Question(Resource):
+
     @staticmethod
     def __no_question_found():
         abort(Response('No question found', status=400)) \
+
 
     @staticmethod
     def __need_an_answer():
@@ -36,11 +25,10 @@ class Question(Resource):
         if level is None:
             Question.__no_question_found()
         # get random question on that level
-        filtered_questions = list(
-            filter(lambda question: question['level'] == level, QUESTIONS))
-        if len(filtered_questions) == 0:
+        filtered_question = data_service.get_question_by_level(level)
+        if filtered_question is None:
             Question.__no_question_found()
-        return filtered_questions[randint(1, len(filtered_questions)) - 1], 200
+        return filtered_question, 200
 
     @staticmethod
     def post():
