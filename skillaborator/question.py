@@ -10,9 +10,9 @@ class Question(Resource):
     @staticmethod
     def __no_question_found():
         abort(Response('No question found', status=400)) \
+ \
+        @ staticmethod
 
-
-    @staticmethod
     def __need_an_answer():
         abort(Response('Need question id and answer id', status=400))
 
@@ -36,13 +36,18 @@ class Question(Resource):
         parser.add_argument('questionId', required=True)
         parser.add_argument('answerId', required=True)
         args = parser.parse_args(strict=True)
-        questionId = args.get('questionId')
-        answerId = args.get('questionId')
-        if questionId is None or answerId is None:
+        question_id = args.get('questionId')
+        answer_id = args.get('answerId')
+        if question_id is None or answer_id is None:
             Question.__need_an_answer()
         # TODO: get right answer from db question - answer mapping
+        answer = data_service.is_answer_right(question_id, answer_id)
+
+        if answer is None:
+            return "Wrong parameters", 400
+        # TODO: not the right answer
+        if answer is None:
+            return "", 200
         # TODO: save answer for user session if there's any
         # TODO: set HTTPOnly cookie for session
-        return '', 200
-
-
+        return answer, 200
