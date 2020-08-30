@@ -9,13 +9,13 @@ class Question(Resource):
 
     @staticmethod
     def __no_question_found():
-        abort(Response('No question found', status=400)) \
- \
-        @ staticmethod
+        abort(Response('No question found', status=400))
 
+    @staticmethod
     def __need_an_answer():
         abort(Response('Need question id and answer id', status=400))
 
+    # TODO: get next question with regards to previous answer(s)
     @staticmethod
     def get():
         parser = reqparse.RequestParser()
@@ -33,21 +33,19 @@ class Question(Resource):
     @staticmethod
     def post():
         parser = reqparse.RequestParser()
-        parser.add_argument('questionId', required=True)
-        parser.add_argument('answerId', required=True)
+        parser.add_argument('questionIds', required=True, type=list, location="json")
+        parser.add_argument('answerIds', required=True, type=list, location="json")
         args = parser.parse_args(strict=True)
-        question_id = args.get('questionId')
-        answer_id = args.get('answerId')
-        if question_id is None or answer_id is None:
+        question_ids = args.get('questionIds')
+        answer_ids = args.get('questionIds')
+        if question_ids is None or answer_ids is None:
             Question.__need_an_answer()
-        # TODO: get right answer from db question - answer mapping
-        answer = data_service.is_answer_right(question_id, answer_id)
-
-        if answer is None:
-            return "Wrong parameters", 400
-        # TODO: not the right answer
-        if answer is None:
-            return "", 200
-        # TODO: save answer for user session if there's any
-        # TODO: set HTTPOnly cookie for session
-        return answer, 200
+        # get right answers from db question - answer mapping
+        right_answer_levels = []
+        for index, question_id in enumerate(question_ids):
+            answer_id = answer_ids[index]
+            answer = data_service.get_right_answer_level(question_id, answer_id)
+            if answer is None:
+                continue
+            right_answer_levels.append(answer["level"])
+        return right_answer_levels, 200

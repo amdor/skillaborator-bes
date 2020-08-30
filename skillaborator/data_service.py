@@ -30,9 +30,17 @@ class DataService:
         ])
         return DataService.first_or_none(question)
 
-    def is_answer_right(self, question_id: str, answer_id: str):
+    def get_right_answer_level(self, question_id: str, answer_id: str):
         # find question with id and answer with id answer_id, exclude _id field, set right to False by default
-        answer_right = self.question_collection.find_one(
-            {"id": question_id, "answers": {"$elemMatch": {"id": answer_id, "right": {"$eq": True}}}},
-            {"_id": 0})
-        return answer_right is not None
+        question = self.question_collection.find_one(
+            {"id": question_id},
+            {"_id": 0, "level": 1, "answers": 1})
+        if question is None:
+            return None
+        for answer_iter in question["answers"]:
+            if answer_iter["id"] is answer_id:
+                answer = answer_iter
+                break
+        if "right" not in answer or answer["right"] is not True:
+            return None
+        return {"level": question["level"]}
