@@ -22,7 +22,9 @@ class DataService:
         return c_list[0]
 
     def get_question_by_level(self, level: int):
-        # get 1 random question matching the level, exclude _id field
+        """
+        Get 1 random question matching the level, exclude _id field
+        """
         question = self.question_collection.aggregate([
             {"$match": {"level": level}},
             {"$sample": {"size": 1}},
@@ -31,7 +33,13 @@ class DataService:
         return DataService.first_or_none(question)
 
     def get_right_answer_level(self, question_id: str, answer_id: str):
-        # find question with id and answer with id answer_id, exclude _id field, set right to False by default
+        """
+        If the answer for `answer_id` to the question for `question_id` is correct return the question level.
+        Otherwise `None`
+        :param question_id: question's id field
+        :param answer_id: answer's id field
+        :return: question level or `None`
+        """
         question = self.question_collection.find_one(
             {"id": question_id},
             {"_id": 0, "level": 1, "answers": 1})

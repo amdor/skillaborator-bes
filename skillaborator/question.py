@@ -18,6 +18,9 @@ class Question(Resource):
     # TODO: get next question with regards to previous answer(s)
     @staticmethod
     def get():
+        """
+        Get a random question on the level provided as url param
+        """
         parser = reqparse.RequestParser()
         parser.add_argument('level', type=int, help='Level of the question', required=True)
         args = parser.parse_args(strict=True)
@@ -32,6 +35,9 @@ class Question(Resource):
 
     @staticmethod
     def post():
+        """
+        Expects question ids and corresponding answer ids in request body, returns an array of correct answers' levels
+        """
         parser = reqparse.RequestParser()
         parser.add_argument('questionIds', required=True, type=list, location="json")
         parser.add_argument('answerIds', required=True, type=list, location="json")
