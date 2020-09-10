@@ -28,10 +28,14 @@ class Question(Resource):
         if level is None:
             Question.__no_question_found()
         # get random question on that level
-        filtered_question = data_service.get_question_by_level(level)
-        if filtered_question is None:
+        random_question = data_service.get_question_by_level(level)
+        if random_question is None:
             Question.__no_question_found()
-        return filtered_question, 200
+
+        random_question['value'] = random_question['value'].replace('\\n', '\n').replace('\\t', '\t')
+        if 'code' in random_question:
+            random_question['code'] = random_question['code'].replace('\\n', '\n').replace('\\t', '\t')
+        return random_question, 200
 
     @staticmethod
     def post():
