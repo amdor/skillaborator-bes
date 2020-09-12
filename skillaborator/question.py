@@ -34,7 +34,7 @@ class Question(Resource):
 
         random_question['value'] = random_question['value'].replace('\\n', '\n').replace('\\t', '\t')
         if 'code' in random_question:
-            random_question['code'] = random_question['code'].replace('\\n', '\n').replace('\\t', '\t')
+            random_question['code']['value'] = random_question['code']['value'].replace('\\n', '\n').replace('\\t', '\t')
         return random_question, 200
 
     @staticmethod
