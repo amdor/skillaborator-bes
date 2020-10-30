@@ -52,3 +52,17 @@ class DataService:
         if "right" not in answer or answer["right"] is not True:
             return None
         return {"level": question["level"]}
+
+    def get_right_answer_for_question(self, question_id: str):
+        question = self.question_collection.find_one(
+            {"id": question_id},
+            {"_id": 0, "answers": 1})
+        if question is None:
+            return ''
+        for answer in question["answers"]:
+            if answer.get('right') is True:
+                return answer['id']
+        return ''
+
+
+data_service = DataService()

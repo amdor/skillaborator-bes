@@ -1,8 +1,7 @@
 from flask import Response
 from flask_restful import Resource, reqparse, abort
-from skillaborator.data_service import DataService
 
-data_service = DataService()
+from skillaborator.data_service import data_service
 
 
 class Question(Resource):

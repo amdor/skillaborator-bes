@@ -1,11 +1,14 @@
 from flask import Flask, Response
 from flask_restful import Api
+
+from skillaborator.evaluator import Evaluator
 from skillaborator.question import Question
 
 app = Flask(__name__)
 api = Api(app)
 
 api.add_resource(Question, '/question')
+api.add_resource(Evaluator, '/selectedAnswers')
 
 
 @app.after_request
