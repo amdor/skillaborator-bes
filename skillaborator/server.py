@@ -4,6 +4,8 @@ from flask_restful import Api
 from skillaborator.evaluator import Evaluator
 from skillaborator.question import Question
 
+# TODO: don't let errors out
+
 app = Flask(__name__)
 api = Api(app)
 

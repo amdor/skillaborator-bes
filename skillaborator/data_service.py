@@ -1,7 +1,10 @@
+from typing import Union
+
 from pymongo import MongoClient
 
 DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'
+ANSWER_COLLECTION = 'answer'
 
 
 class DataService:
@@ -11,6 +14,7 @@ class DataService:
         self.client = MongoClient('mongodb://localhost:27017/')
         self.db = self.client[DB_NAME]
         self.question_collection = self.db[QUESTION_COLLECTION]
+        self.answer_collection = self.db[ANSWER_COLLECTION]
 
     @staticmethod
     def first_or_none(cursor):
@@ -24,45 +28,44 @@ class DataService:
     def get_question_by_level(self, level: int):
         """
         Get 1 random question matching the level, exclude _id field
+        Maps answer ids to answers
+        Computes multi field (true if question has multiple right answers)
         """
-        question = self.question_collection.aggregate([
+        question_cursor = self.question_collection.aggregate([
             {"$match": {"level": level}},
             {"$sample": {"size": 1}},
-            {"$project": {"_id": False}}
+            {"$addFields": {
+                "multi": {
+                    "$cond": {
+                        "if": {"$gt": [{"$size": "$rightAnswers"}, 1]}, "then": True,
+                        "else": False
+                    }
+                }
+            }},
+            {"$project": {
+                "_id": False,
+                "rightAnswers": False,
+            }}
         ])
-        return DataService.first_or_none(question)
+        random_question = DataService.first_or_none(question_cursor)
+        if random_question is None:
+            return None
+        answers = self.answer_collection.find(
+            {"id": {"$in": random_question.get("answers", list())}},
+            {"_id": False}
+        )
+        if answers is None:
+            return None
+        random_question["answers"] = list(answers)
+        return random_question
 
-    def get_right_answer_level(self, question_id: str, answer_id: str):
-        """
-        If the answer for `answer_id` to the question for `question_id` is correct return the question level.
-        Otherwise `None`
-        :param question_id: question's id field
-        :param answer_id: answer's id field
-        :return: question level or `None`
-        """
+    def get_right_answers_for_question(self, question_id: str) -> Union[list, None]:
         question = self.question_collection.find_one(
             {"id": question_id},
-            {"_id": 0, "level": 1, "answers": 1})
-        if question is None:
+            {"_id": 0, "rightAnswers": 1})
+        if question is None or "rightAnswers" not in question:
             return None
-        for answer_iter in question["answers"]:
-            if answer_iter["id"] is answer_id:
-                answer = answer_iter
-                break
-        if "right" not in answer or answer["right"] is not True:
-            return None
-        return {"level": question["level"]}
-
-    def get_right_answer_for_question(self, question_id: str):
-        question = self.question_collection.find_one(
-            {"id": question_id},
-            {"_id": 0, "answers": 1})
-        if question is None:
-            return ''
-        for answer in question["answers"]:
-            if answer.get('right') is True:
-                return answer['id']
-        return ''
+        return question["rightAnswers"]
 
 
 data_service = DataService()

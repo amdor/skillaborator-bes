@@ -14,7 +14,7 @@ class Evaluator(Resource):
     @staticmethod
     def post():
         """
-        Post the selected answers for the questions, and get the right answer back in the response
+        Post the selected answers for the questions, and get the right answers back in the response
         """
         parser = reqparse.RequestParser()
         parser.add_argument('selectedAnswers', required=True, type=list, location="json")
@@ -23,6 +23,8 @@ class Evaluator(Resource):
         if selected_answers is None:
             Evaluator.__need_proper_answers()
         for index, selectedAnswer in enumerate(selected_answers):
-            right_answer_id = data_service.get_right_answer_for_question(selectedAnswer['questionId'])
-            selected_answers[index]['rightAnswerId'] = right_answer_id
+            if selectedAnswer.get('questionId') is None:
+                Evaluator.__need_proper_answers()
+            right_answer_ids = data_service.get_right_answers_for_question(selectedAnswer['questionId'])
+            selected_answers[index]['rightAnswerIds'] = right_answer_ids
         return selected_answers, 200
