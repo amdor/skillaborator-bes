@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List, Dict
 
 from pymongo import MongoClient
 
@@ -15,6 +15,11 @@ class DataService:
         self.db = self.client[DB_NAME]
         self.question_collection = self.db[QUESTION_COLLECTION]
         self.answer_collection = self.db[ANSWER_COLLECTION]
+
+    def __get_partial_question(self, question_id: str, right_answers=0, level=0):
+        return self.question_collection.find_one(
+            {"id": question_id},
+            {"_id": 0, "rightAnswers": right_answers, "level": level})
 
     @staticmethod
     def first_or_none(cursor):
@@ -52,20 +57,26 @@ class DataService:
             return None
         answers = self.answer_collection.find(
             {"id": {"$in": random_question.get("answers", list())}},
-            {"_id": False}
+            {"_id": 0}
         )
         if answers is None:
             return None
         random_question["answers"] = list(answers)
         return random_question
 
-    def get_right_answers_for_question(self, question_id: str) -> Union[list, None]:
-        question = self.question_collection.find_one(
-            {"id": question_id},
-            {"_id": 0, "rightAnswers": 1})
-        if question is None or "rightAnswers" not in question:
+    def get_question_right_answers_and_level(self, question_id: str):
+        return self.__get_partial_question(question_id, right_answers=1, level=1)
+
+    def get_questions_right_answers(self, question_ids: List[str]) -> Union[Dict[str, List[str]], None]:
+        questions = self.question_collection.find(
+            {"id": {"$in": question_ids}},
+            {"_id": 0, "rightAnswers": 1, "id": 1})
+        if questions is None:
             return None
-        return question["rightAnswers"]
+        questions = list(questions)
+        if len(questions) == 0:
+            return None
+        return {question.get("id"): question.get("rightAnswers") for question in questions}
 
 
 data_service = DataService()

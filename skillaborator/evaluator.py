@@ -20,11 +20,14 @@ class Evaluator(Resource):
         parser.add_argument('selectedAnswers', required=True, type=list, location="json")
         args = parser.parse_args(strict=True)
         selected_answers = args.get('selectedAnswers')
+        answered_questions_ids = []
         if selected_answers is None:
             Evaluator.__need_proper_answers()
         for index, selectedAnswer in enumerate(selected_answers):
             if selectedAnswer.get('questionId') is None:
                 Evaluator.__need_proper_answers()
-            right_answer_ids = data_service.get_right_answers_for_question(selectedAnswer['questionId'])
-            selected_answers[index]['rightAnswerIds'] = right_answer_ids
+            answered_questions_ids.append(selectedAnswer.get('questionId'))
+        right_answers_by_question = data_service.get_questions_right_answers(answered_questions_ids)
+        for index, selected_answer in enumerate(selected_answers):
+            selected_answers[index]['rightAnswerIds'] = right_answers_by_question.get(selected_answer.get('questionId'))
         return selected_answers, 200
