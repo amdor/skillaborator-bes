@@ -12,6 +12,12 @@ class Question(Resource):
         abort(Response('No question found', status=400))
 
     @staticmethod
+    def __format_question_texts(question):
+        question['value'] = question['value'].replace('\\n', '\n').replace('\\t', '\t')
+        if 'code' in question:
+            question['code']['value'] = question['code']['value'].replace('\\n', '\n').replace('\\t', '\t')
+
+    @staticmethod
     def get():
         """
         Get a random question calculated by the last question's level
@@ -23,10 +29,15 @@ class Question(Resource):
 
         parser.add_argument('answerId', dest='answerIds', type=str, help='Last question`s chosen answers',
                             action='append')
+        parser.add_argument('previousQuestionId', dest='previousQuestionIds', type=str,
+                            help='All previously answered questions', action='append')
+
         args = parser.parse_args(strict=True)
         current_score = args.get('currentScore')
         last_question_id = args.get('questionId')
         last_question_answers = args.get('answerIds')
+        previous_question_ids = args.get('previousQuestionIds') or []
+
         # answer received, calculate next score if can
         if last_question_answers is not None and len(last_question_answers) != 0:
             if last_question_id is None:
@@ -39,14 +50,11 @@ class Question(Resource):
 
         next_level = ScoreService.calculate_next_question_level(current_score)
         # get random question on that level
-        random_question = data_service.get_question_by_level(next_level)
+        random_question = data_service.get_question_by_level(next_level, previous_question_ids)
         if random_question is None:
             Question.__no_question_found()
+        Question.__format_question_texts(random_question)
 
-        random_question['value'] = random_question['value'].replace('\\n', '\n').replace('\\t', '\t')
-        if 'code' in random_question:
-            random_question['code']['value'] = random_question['code']['value'].replace('\\n', '\n').replace('\\t',
-                                                                                                             '\t')
         response: Response = make_response(random_question, 200)
         # TODO setcookie domain only for dev
         response.set_cookie(key='currentScore', value=f'{current_score}', httponly=True,
