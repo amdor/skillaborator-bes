@@ -30,14 +30,18 @@ class DataService:
             return None
         return c_list[0]
 
-    def get_question_by_level(self, level: int):
+    def get_question_by_level(self, level: int, previous_question_ids: List[str]):
         """
-        Get 1 random question matching the level, exclude _id field
-        Maps answer ids to answers
+        Gets 1 random question matching the level, not matching previous ids
         Computes multi field (true if question has multiple right answers)
+        Excludes _id and rightAnswers fields
+        Maps answer ids to answers
         """
         question_cursor = self.question_collection.aggregate([
-            {"$match": {"level": level}},
+            {"$match": {
+                "level": level,
+                "id": {"$nin": previous_question_ids}
+            }},
             {"$sample": {"size": 1}},
             {"$addFields": {
                 "multi": {

@@ -15,11 +15,15 @@ api.add_resource(Evaluator, '/selectedAnswers')
 
 @app.after_request
 def add_cors_after_request(response: Response):
-    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+    # TODO this should come from config
+    response.headers['Access-Control-Allow-Origin'] = 'http://api.app.localhost:4200'
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # TODO set run attributes by environment
+    # app.run(debug=True, host="api.app.localhost", port=5000, ssl_context=('cert.pem', 'key.pem'))
+    app.run(debug=True, host="api.app.localhost", port=5000)
