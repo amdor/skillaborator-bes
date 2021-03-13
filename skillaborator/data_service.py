@@ -78,9 +78,10 @@ class DataService:
         if questions is None:
             return None
         questions = list(questions)
-        if len(questions) == 0:
+        if not questions:
             return None
-        return {question.get("id"): question.get("rightAnswers") for question in questions}
+        # return a dict of question id keys and all the non empty right answers
+        return {question.get("id"): [rightAnswer for rightAnswer in question.get("rightAnswers") if rightAnswer] for question in questions}
 
 
 data_service = DataService()

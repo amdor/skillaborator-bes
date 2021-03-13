@@ -17,39 +17,64 @@ class DataService:
 
 insert_answer = 0
 
-answer_values = ["Header Translating Transfer Protocol",
-                 "HyperText Transfer Protocol",
-                 "Host Tracing Transfer Protocol",
-                 "High-level Text Transfer Protocol"]
+answer_values = ["First",
+                 "Second",
+                 "Third",
+                 "Fourth"]
 
-question_value = "What does HTTP stand for?"
-question_level = 1
-question_answers = ["74", "75", "76", "77"]
-right_answers = ["75"]
-tags = ['http', 'browser']
-code = None
+question_value = "Select acceptable targeting"
+question_level = 2
+question_answers = ["9", "10", "11", "12"]
+right_answers = ["10", ""]
+tags = ['css']
+code = {
+    "value": """
+.error {
+  color: red !important;
+}
+
+.some-dialog {
+  .error {
+    color: red;
+  }
+}
+
+#specificError{
+  color: red;
+}
+
+.parent {
+  .some-dialog {
+    .list-item {
+      .error {
+        color: red;
+      }
+    }
+  }
+}""",
+    "language": "css"
+}
+
+
+def get_id_for_collection(collection):
+    numeric_collation = collation.Collation(
+        locale="en_US", numericOrdering=True)
+    ids = list(collection.find({}, {"id": 1, "_id": 0}, sort=[
+               ("id", DESCENDING)], limit=1, collation=numeric_collation))
+    return 0 if not ids else int(ids[0]["id"])
 
 
 def insert_answer_or_question(_data_service):
-    numeric_collation = collation.Collation(locale="en_US", numericOrdering=True)
-    question_id = int(
-        list(
-            _data_service.question_collection.find({}, {"id": 1, "_id": 0}, sort=[("id", DESCENDING)], limit=1,
-                                                   collation=numeric_collation)
-        )[0]["id"]
-    )
-    answer_id = int(
-        list(
-            _data_service.answer_collection.find({}, {"id": 1, "_id": 0}, sort=[("id", DESCENDING)], limit=1,
-                                                 collation=numeric_collation)
-        )[0]["id"]
-    )
+    question_id = get_id_for_collection(_data_service.question_collection)
+
+    answer_id = get_id_for_collection(_data_service.answer_collection)
 
     if insert_answer:
         for answer_value in answer_values:
             answer_id = answer_id + 1
-            data_service.answer_collection.insert_one({"id": f"{answer_id}", "value": answer_value})
-            print(f"answer id {answer_id}")
+            data_service.answer_collection.insert_one(
+                {"id": f"{answer_id}", "value": answer_value})
+            print(f"\"{answer_id}\",", end=" ")
     else:
         question = {"id": f"{question_id + 1}",
                     "level": question_level,
