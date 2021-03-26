@@ -8,7 +8,6 @@ ANSWER_COLLECTION = 'answer'
 class DataService:
 
     def __init__(self):
-        # TODO getting url from config
         self.client = MongoClient('mongodb://localhost:27017/')
         self.db = self.client[DB_NAME]
         self.question_collection = self.db[QUESTION_COLLECTION]

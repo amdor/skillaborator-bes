@@ -5,6 +5,7 @@ from pymongo import MongoClient
 DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'
 ANSWER_COLLECTION = 'answer'
+ANSWER_ANALYSIS_COLLECTION = 'answer_analysis'
 
 
 class DataService:
@@ -15,6 +16,7 @@ class DataService:
         self.db = self.client[DB_NAME]
         self.question_collection = self.db[QUESTION_COLLECTION]
         self.answer_collection = self.db[ANSWER_COLLECTION]
+        self.answer_analysis_collection = self.db[ANSWER_ANALYSIS_COLLECTION]
 
     def __get_partial_question(self, question_id: str, right_answers=0, level=0):
         return self.question_collection.find_one(
