@@ -16,8 +16,8 @@ api.add_resource(Evaluator, '/selectedAnswers')
 
 @app.after_request
 def add_cors_after_request(response: Response):
-    # TODO this should come from config
-    response.headers['Access-Control-Allow-Origin'] = 'http://api.app.localhost:4200'
+    allow_origin = environ.get("ALLOW_ORIGIN", "http://api.app.localhost:4200")
+    response.headers['Access-Control-Allow-Origin'] = allow_origin
     response.headers.add('Access-Control-Allow-Methods',
                          'GET,PUT,POST,DELETE,OPTIONS')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
