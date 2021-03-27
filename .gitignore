@@ -130,3 +130,5 @@ dmypy.json
 .idea/
 skillaborator/cert.pem
 skillaborator/key.pem
+.vscode/launch.json
+.vscode/settings.json
