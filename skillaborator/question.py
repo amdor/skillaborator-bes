@@ -4,6 +4,7 @@ from flask_restful import Resource, reqparse, abort
 
 from skillaborator.data_service import data_service
 from skillaborator.score_service import ScoreService
+from skillaborator.answer_analysis_service import answer_analysis_service
 
 
 class Question(Resource):
@@ -14,9 +15,11 @@ class Question(Resource):
 
     @staticmethod
     def __format_question_texts(question):
-        question['value'] = question['value'].replace('\\n', '\n').replace('\\t', '\t')
+        question['value'] = question['value'].replace(
+            '\\n', '\n').replace('\\t', '\t')
         if 'code' in question:
-            question['code']['value'] = question['code']['value'].replace('\\n', '\n').replace('\\t', '\t')
+            question['code']['value'] = question['code']['value'].replace(
+                '\\n', '\n').replace('\\t', '\t')
 
     # TODO add 'neither' answer dynamically
     @staticmethod
@@ -26,8 +29,10 @@ class Question(Resource):
         """
         parser = reqparse.RequestParser()
 
-        parser.add_argument('currentScore', type=int, help='Current score of the user', location='cookies')
-        parser.add_argument('questionId', type=str, help='Last question`s id', location='cookies')
+        parser.add_argument('currentScore', type=int,
+                            help='Current score of the user', location='cookies')
+        parser.add_argument('questionId', type=str,
+                            help='Last question`s id', location='cookies')
 
         parser.add_argument('answerId', dest='answerIds', type=str, help='Last question`s chosen answers',
                             action='append')
@@ -47,13 +52,16 @@ class Question(Resource):
             else:
                 current_score = ScoreService.calculate_next_score(last_question_id, last_question_answers,
                                                                   current_score)
+                answer_analysis_service.save_answer(
+                    last_question_id, last_question_answers)
         else:
             current_score = 0
             previous_question_ids = []
 
         next_level = ScoreService.calculate_next_question_level(current_score)
         # get random question on that level
-        random_question = data_service.get_question_by_level(next_level, previous_question_ids)
+        random_question = data_service.get_question_by_level(
+            next_level, previous_question_ids)
         if random_question is None:
             Question.__no_question_found()
         Question.__format_question_texts(random_question)

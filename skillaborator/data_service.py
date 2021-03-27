@@ -1,20 +1,23 @@
 from typing import Union, List, Dict
 
 from pymongo import MongoClient
+from os import environ
 
 DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'
 ANSWER_COLLECTION = 'answer'
+ANSWER_ANALYSIS_COLLECTION = 'answer_analysis'
 
 
 class DataService:
 
     def __init__(self):
-        # TODO getting url from config
-        self.client = MongoClient('mongodb://localhost:27017/')
+        db_host = environ.get("DB_HOST", 'mongodb://localhost:27017/')
+        self.client = MongoClient(db_host)
         self.db = self.client[DB_NAME]
         self.question_collection = self.db[QUESTION_COLLECTION]
         self.answer_collection = self.db[ANSWER_COLLECTION]
+        self.answer_analysis_collection = self.db[ANSWER_ANALYSIS_COLLECTION]
 
     def __get_partial_question(self, question_id: str, right_answers=0, level=0):
         return self.question_collection.find_one(
@@ -78,9 +81,10 @@ class DataService:
         if questions is None:
             return None
         questions = list(questions)
-        if len(questions) == 0:
+        if not questions:
             return None
-        return {question.get("id"): question.get("rightAnswers") for question in questions}
+        # return a dict of question id keys and all the non empty right answers
+        return {question.get("id"): [rightAnswer for rightAnswer in question.get("rightAnswers") if rightAnswer] for question in questions}
 
 
 data_service = DataService()
