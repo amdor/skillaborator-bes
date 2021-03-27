@@ -1,6 +1,7 @@
 from typing import Union, List, Dict
 
 from pymongo import MongoClient
+from os import environ
 
 DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'
@@ -11,8 +12,8 @@ ANSWER_ANALYSIS_COLLECTION = 'answer_analysis'
 class DataService:
 
     def __init__(self):
-        # TODO getting url from config
-        self.client = MongoClient('mongodb://localhost:27017/')
+        db_host = environ.get("DB_HOST", 'mongodb://localhost:27017/')
+        self.client = MongoClient(db_host)
         self.db = self.client[DB_NAME]
         self.question_collection = self.db[QUESTION_COLLECTION]
         self.answer_collection = self.db[ANSWER_COLLECTION]

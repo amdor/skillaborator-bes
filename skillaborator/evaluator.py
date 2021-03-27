@@ -13,7 +13,6 @@ class Evaluator(Resource):
     def __need_proper_answers():
         abort(Response('Selected answers provided are not sufficient', status=400))
 
-    # TODO: save questions and selected answers for analysis
     @staticmethod
     def get():
         """
