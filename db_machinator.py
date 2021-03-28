@@ -66,9 +66,8 @@ def get_id_for_collection(collection):
 def insert_answer_or_question(_data_service):
     question_id = get_id_for_collection(_data_service.question_collection)
 
-    answer_id = get_id_for_collection(_data_service.answer_collection)
-
     if insert_answer:
+        answer_id = get_id_for_collection(_data_service.answer_collection)
         for answer_value in answer_values:
             answer_id = answer_id + 1
             data_service.answer_collection.insert_one(
@@ -83,6 +82,7 @@ def insert_answer_or_question(_data_service):
                     "tags": tags}
         if code is not None:
             question["code"] = code
+        print(dumps(question))
         data_service.question_collection.insert_one(question)
         print(f"question id {question_id + 1}")
 
