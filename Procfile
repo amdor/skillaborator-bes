@@ -1,1 +1,1 @@
-web: gunicorn skyscraper.rest_service:app
+web: gunicorn skillaborator.server:app
