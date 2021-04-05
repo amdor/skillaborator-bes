@@ -71,8 +71,8 @@ class Question(Resource):
         previous_question_ids.append(random_question.get("id"))
 
         response: Response = make_response(random_question, 200)
-        
-        host = environ.get("SERVER_HOST", "api.app.localhost")
+
+        host = environ.get("DOMAIN", "api.app.localhost")
         response.set_cookie(key='currentScore', value=f'{current_score}', httponly=True,
                             domain=host)
         response.set_cookie(key='questionId', value=f'{random_question.get("id")}', httponly=True,
