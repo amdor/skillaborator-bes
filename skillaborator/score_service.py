@@ -6,16 +6,21 @@ SCORE_BASE = 10
 
 
 class ScoreService:
+    LEVEL_TWO_THRESHOLD = 5*SCORE_BASE
+    LEVEL_THREE_THRESHOLD = LEVEL_TWO_THRESHOLD + 5*(SCORE_BASE+2)
+    LEVEL_FOUR_THRESHOLD = LEVEL_THREE_THRESHOLD + 5*(SCORE_BASE+3)
+
+
     @staticmethod
     def calculate_next_question_level(score: int) -> int:
         # 5 answers perfect score 55
-        if score < 50:
+        if score < LEVEL_TWO_THRESHOLD:
             return 1
         # 10 answers perfect score 115
-        elif score < 115:
+        elif score < LEVEL_THREE_THRESHOLD:
             return 2
         # 15 answers perfect score 180
-        elif score < 180:
+        elif score < LEVEL_FOUR_THRESHOLD:
             return 3
         else:
             return 4
