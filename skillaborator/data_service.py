@@ -1,7 +1,7 @@
+from os import environ
 from typing import Union, List, Dict
 
 from pymongo import MongoClient
-from os import environ
 
 DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'

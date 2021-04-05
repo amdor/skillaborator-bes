@@ -28,4 +28,4 @@ def add_cors_after_request(response: Response):
 if __name__ == '__main__':
     # app.run(debug=True, host="api.app.localhost", port=5000, ssl_context=('cert.pem', 'key.pem'))
     host = environ.get("SERVER_HOST", "api.app.localhost")
-    app.run(debug=True, host="api.app.localhost")
+    app.run(debug=True, host=host)
