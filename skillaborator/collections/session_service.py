@@ -32,12 +32,15 @@ class SessionService:
         return None
 
     def get(self, session_id) -> Optional[Session]:
-        session = Session(session_id)
         session_dict = self.collection.find_one({"session_id": session_id})
         if session_dict:
+            session = Session(session_id)
             session.parse_dict(session_dict)
             return session
         return self.__create_new_session(session_id)
+
+    def save(self, session: Session):
+        self.collection.replace_one({"session_id": session.session_id}, session.__dict__)
 
 
 session_service = SessionService()
