@@ -4,7 +4,7 @@ from flask_restful import Resource, reqparse, abort
 
 from skillaborator.data_service import data_service
 from skillaborator.score_service import ScoreService
-from skillaborator.answer_analysis_service import answer_analysis_service
+from skillaborator.collections.answer_analysis_service import answer_analysis_service
 
 
 class Evaluator(Resource):

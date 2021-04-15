@@ -4,7 +4,8 @@ from flask import Response, make_response
 from flask.json import loads, dumps
 from flask_restful import Resource, reqparse, abort
 
-from skillaborator.answer_analysis_service import answer_analysis_service
+from skillaborator.collections.answer_analysis_service import answer_analysis_service
+from skillaborator.collections.session_service import session_service
 from skillaborator.data_service import data_service
 from skillaborator.score_service import ScoreService
 
@@ -16,6 +17,10 @@ class Question(Resource):
         abort(Response('No question found', status=400))
 
     @staticmethod
+    def __invalid_session():
+        abort(Response('Invalid session', status=401))
+
+    @staticmethod
     def __format_question_texts(question):
         question['value'] = question['value'].replace(
             '\\n', '\n').replace('\\t', '\t')
@@ -23,14 +28,11 @@ class Question(Resource):
             question['code']['value'] = question['code']['value'].replace(
                 '\\n', '\n').replace('\\t', '\t')
 
-    # TODO add 'neither' answer dynamically
     @staticmethod
-    def get():
-        """
-        Get a random question calculated by the last question's level
-        """
+    def __parse_args():
         parser = reqparse.RequestParser()
 
+        # TODO location cookies removal
         parser.add_argument('currentScore', type=int,
                             help='Current score of the user', location='cookies')
         parser.add_argument('questionId', type=str,
@@ -41,11 +43,23 @@ class Question(Resource):
         parser.add_argument('previousQuestionIds', type=str,
                             help='All previously answered questions', location='cookies')
 
-        args = parser.parse_args(strict=True)
+        return parser.parse_args(strict=True)
+
+    # TODO add 'neither' answer dynamically
+    @staticmethod
+    def get(one_time_code):
+        """
+        Get a random question calculated by the last question's level
+        """
+        args = Question.__parse_args()
         current_score = args.get('currentScore')
         last_question_id = args.get('questionId')
         last_question_answers = args.get('answerIds')
         previous_question_ids = loads(args.get('previousQuestionIds') or "[]")
+
+        session = session_service.get(one_time_code)
+        if not session:
+            Question.__invalid_session()
 
         # answer received, calculate next score if can
         if last_question_answers is not None and len(last_question_answers) != 0:

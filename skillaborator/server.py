@@ -10,8 +10,8 @@ from os import environ
 app = Flask(__name__)
 api = Api(app)
 
-api.add_resource(Question, '/question')
-api.add_resource(Evaluator, '/selectedAnswers')
+api.add_resource(Question, '/question/<one_time_code>')
+api.add_resource(Evaluator, '/selectedAnswers/<one_time_code>')
 
 
 @app.after_request
