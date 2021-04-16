@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from skillaborator.collections.session_service import SessionService
+from skillaborator.db_collections.session_service import SessionService
 
 
 class Any(object):

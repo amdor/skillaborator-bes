@@ -1,12 +1,9 @@
-from os import environ
-
 from flask import Response, make_response
-from flask.json import loads, dumps
 from flask_restful import Resource, reqparse, abort
 
-from skillaborator.collections.answer_analysis_service import answer_analysis_service
-from skillaborator.collections.session_service import session_service
 from skillaborator.data_service import data_service
+from skillaborator.db_collections.answer_analysis_service import answer_analysis_service
+from skillaborator.db_collections.session_service import session_service
 from skillaborator.score_service import ScoreService
 
 
@@ -44,25 +41,26 @@ class Question(Resource):
         Get a random question calculated by the last question's level
         """
         args = Question.__parse_args()
-        last_question_answers = args.get('answerIds')
+        answer_ids = args.get('answerIds')
 
         session = session_service.get(one_time_code)
         if not session:
             Question.__invalid_session()
 
         # answer received, calculate next score if can
-        if last_question_answers is not None and len(last_question_answers) != 0:
-            if len(session.previous_question_ids) == 0:
+        if answer_ids is not None and len(answer_ids) != 0:
+            prev_question_count = len(session.previous_question_ids)
+            if prev_question_count == 0:
                 Question.__no_question_found()
             else:
-                last_question_id = session.previous_question_ids[len(session.previous_question_ids)]
-                session.current_score = ScoreService.calculate_next_score(last_question_id, last_question_answers,
+                last_question_id = session.previous_question_ids[prev_question_count - 1]
+                session.current_score = ScoreService.calculate_next_score(last_question_id, answer_ids,
                                                                           session.current_score)
                 answer_analysis_service.save_answer(
-                    last_question_id, last_question_answers)
-        else:
-            session.current_score = 0
-            session.previous_question_ids = []
+                    last_question_id, answer_ids)
+        elif len(session.previous_question_ids) > 0:
+            # there are no answers but there has been questions already, illegal call
+            abort(Response('Must give an answer', status=400))
 
         next_level = ScoreService.calculate_next_question_level(session.current_score)
         # get random question on that level
