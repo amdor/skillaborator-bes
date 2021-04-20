@@ -28,6 +28,7 @@ class SessionService:
         session = Session(session_id)
         insert_result = self.collection.insert_one(session.__dict__)
         if insert_result.acknowledged:
+            self.one_time_code_collection.update_one({"code": session_id}, {"$set": {"used": True}})
             return session
         return None
 
@@ -37,6 +38,7 @@ class SessionService:
             session = Session(session_id)
             session.parse_dict(session_dict)
             return session
+        # TODO check used
         return self.__create_new_session(session_id)
 
     def save(self, session: Session):

@@ -30,15 +30,15 @@ def handle_exception(e):
     return Response('Internal error occurred', status=500)
 
 
-# @app.after_request
-# def add_cors_after_request(response: Response):
-#     allow_origin = environ.get("ALLOW_ORIGIN", "http://api.app.localhost:4200")
-#     response.headers['Access-Control-Allow-Origin'] = allow_origin
-#     response.headers.add('Access-Control-Allow-Methods',
-#                          'GET,PUT,POST,DELETE,OPTIONS')
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-#     response.headers.add('Access-Control-Allow-Credentials', 'true')
-#     return response
+@app.after_request
+def add_cors_after_request(response: Response):
+    allow_origin = environ.get("ALLOW_ORIGIN", "http://api.app.localhost:4200")
+    response.headers['Access-Control-Allow-Origin'] = allow_origin
+    response.headers.add('Access-Control-Allow-Methods',
+                         'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 
 if __name__ == '__main__':
