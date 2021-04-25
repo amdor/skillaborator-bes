@@ -14,10 +14,6 @@ class Question(Resource):
         abort(Response('No question found', status=400))
 
     @staticmethod
-    def __invalid_session():
-        abort(Response('Invalid session', status=401))
-
-    @staticmethod
     def __format_question_texts(question):
         question['value'] = question['value'].replace(
             '\\n', '\n').replace('\\t', '\t')
@@ -43,9 +39,8 @@ class Question(Resource):
         args = Question.__parse_args()
         answer_ids = args.get('answerIds')
 
-        session = session_service.get(one_time_code)
-        if not session:
-            Question.__invalid_session()
+        new_session = answer_ids is None or len(answer_ids) != 0
+        session = session_service.get(one_time_code, new_session)
 
         # answer received, calculate next score if can
         if answer_ids is not None and len(answer_ids) != 0:
@@ -58,9 +53,6 @@ class Question(Resource):
                                                                           session.current_score)
                 answer_analysis_service.save_answer(
                     last_question_id, answer_ids)
-        elif len(session.previous_question_ids) > 0:
-            # there are no answers but there has been questions already, illegal call
-            abort(Response('Must give an answer', status=400))
 
         next_level = ScoreService.calculate_next_question_level(session.current_score)
         # get random question on that level

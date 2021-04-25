@@ -14,10 +14,6 @@ class Evaluator(Resource):
         abort(Response('Selected answers provided are not sufficient', status=400))
 
     @staticmethod
-    def __invalid_session():
-        abort(Response('Invalid session', status=401))
-
-    @staticmethod
     def __parse_args():
         # TODO: reusable parser?
         parser = reqparse.RequestParser()
@@ -36,9 +32,6 @@ class Evaluator(Resource):
 
         session = session_service.get(one_time_code)
 
-        if not session:
-            Evaluator.__invalid_session()
-
         last_question_answers = args.get('answerIds')
         final_score = session.current_score
 
@@ -49,8 +42,11 @@ class Evaluator(Resource):
         last_question_id = session.previous_question_ids[prev_question_count - 1]
         final_score = ScoreService.calculate_next_score(
             last_question_id, last_question_answers, final_score)
+
         answer_analysis_service.save_answer(
             last_question_id, last_question_answers)
+        session.current_score = final_score
+        session_service.end(session)
 
         right_answers_by_questions = data_service.get_questions_right_answers(
             session.previous_question_ids)

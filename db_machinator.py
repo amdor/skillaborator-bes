@@ -8,6 +8,7 @@ DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'
 ANSWER_COLLECTION = 'answer'
 ONE_TIME_CODES_COLLECTION = 'one_time_codes'
+SESSION_COLLECTION = 'session'
 
 
 class DataService:
@@ -18,9 +19,10 @@ class DataService:
         self.question_collection = self.db[QUESTION_COLLECTION]
         self.answer_collection = self.db[ANSWER_COLLECTION]
         self.one_time_codes_collection = self.db[ONE_TIME_CODES_COLLECTION]
+        self.session_collection = self.db[SESSION_COLLECTION]
 
 
-one_time_codes_to_insert = {"code_count": 1, "tags_to_use": []}
+one_time_codes_to_insert = {"code_count": 20, "tags_to_use": []}
 
 insert_answer = 0
 
@@ -130,9 +132,14 @@ def insert_one_time_codes(_data_service):
         i = i + 1
 
 
+def remove_sessions(_data_service: DataService):
+    _data_service.session_collection.delete_many({})
+
+
 if __name__ == '__main__':
     data_service = DataService()
     # insert_answer_or_question(data_service)
     # add_tags(data_service)
     # get_tags(data_service)
     insert_one_time_codes(data_service)
+    # remove_sessions(data_service)
