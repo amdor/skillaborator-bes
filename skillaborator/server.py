@@ -1,17 +1,50 @@
-from flask import Flask, Response
-from flask_restful import Api
+import traceback
+from os import environ
 
+from flask import Flask, Response
+from flask_restful import Api, Resource
+from pymongo.cursor import Cursor
+from werkzeug.exceptions import HTTPException
+
+from skillaborator.data_service import data_service
 from skillaborator.evaluator import Evaluator
 from skillaborator.question import Question
-from os import environ
+
+
+# TODO remove
+class TempCodeService(Resource):
+    def __init__(self):
+        self.collection = data_service.db["one_time_codes"]
+
+    def get(self):
+        cursor: Cursor = self.collection.find({"used": False}, {"code": True, "_id": False}).limit(10)
+        ret = list()
+        for doc in cursor:
+            ret.append(doc["code"])
+        return ret
+
 
 # TODO: don't let errors out
 
 app = Flask(__name__)
 api = Api(app)
 
-api.add_resource(Question, '/question')
-api.add_resource(Evaluator, '/selectedAnswers')
+api.add_resource(Question, '/question/<one_time_code>')
+api.add_resource(Evaluator, '/selectedAnswers/<one_time_code>')
+api.add_resource(TempCodeService, '/codes')
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+
+    if app.debug:
+        track = traceback.format_exc()
+        print(track)
+    # now you're handling non-HTTP exceptions only
+    return Response('Internal error occurred', status=500)
 
 
 @app.after_request
