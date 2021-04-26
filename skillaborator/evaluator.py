@@ -25,12 +25,34 @@ class Evaluator(Resource):
     @staticmethod
     def get(one_time_code):
         """
-        Post the selected answers for the questions, and get the right answers back in the response
+        Returns the evaluation results with selected answers, score, and right answers
+        """
+        session = session_service.get(one_time_code)
+        final_score = session.current_score
+        if session.ended:
+            questions_with_right_answers = data_service.get_questions(session.previous_question_ids)
+            selected_answers = list()
+            for i in range(len(session.previous_question_ids)):
+                selected_answers.append(
+                    {"questionId": session.previous_question_ids[i], "answerIds": session.selected_answers[i]})
+            return {
+                       "questionsWithRightAnswers": questions_with_right_answers,
+                       "score": final_score,
+                       "selectedAnswers": selected_answers
+                   }, 200
+
+    @staticmethod
+    def put(one_time_code):
+        """
+        Post the selected answers for the questions, and get only the right answers back in the response
         """
 
         args = Evaluator.__parse_args()
 
         session = session_service.get(one_time_code)
+
+        if session.ended:
+            abort(Response('This session has already ended', status=400))
 
         last_question_answers = args.get('answerIds')
         final_score = session.current_score
@@ -45,7 +67,9 @@ class Evaluator(Resource):
 
         answer_analysis_service.save_answer(
             last_question_id, last_question_answers)
+
         session.current_score = final_score
+        session.selected_answers.append(last_question_answers)
         session_service.end(session)
 
         right_answers_by_questions = data_service.get_questions_right_answers(

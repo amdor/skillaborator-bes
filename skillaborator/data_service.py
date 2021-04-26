@@ -26,6 +26,18 @@ class DataService:
             {"id": question_id},
             {"_id": 0, "rightAnswers": right_answers, "level": level})
 
+    def __replace_answers_in_question(self, question: Dict):
+        """
+        Finds answers in collection by ids and replaces the original id array in questions with answer dicts
+        """
+        answers = self.answer_collection.find(
+            {"id": {"$in": question.get("answers", list())}},
+            {"_id": 0}
+        )
+        if answers is None:
+            return None
+        question["answers"] = list(answers)
+
     @staticmethod
     def first_or_none(cursor):
         if cursor is None:
@@ -64,13 +76,7 @@ class DataService:
         random_question = DataService.first_or_none(question_cursor)
         if random_question is None:
             return None
-        answers = self.answer_collection.find(
-            {"id": {"$in": random_question.get("answers", list())}},
-            {"_id": 0}
-        )
-        if answers is None:
-            return None
-        random_question["answers"] = list(answers)
+        self.__replace_answers_in_question(random_question)
         return random_question
 
     def get_question_right_answers_and_level(self, question_id: str):
@@ -86,7 +92,22 @@ class DataService:
         if not questions:
             return None
         # return a dict of question id keys and all the non empty right answers
-        return {question.get("id"): [rightAnswer for rightAnswer in question.get("rightAnswers") if rightAnswer] for question in questions}
+        return {question.get("id"): [rightAnswer for rightAnswer in question.get("rightAnswers")] for question in
+                questions}
+
+    def get_questions(self, question_ids: List[str]):
+        questions = self.question_collection.find(
+            {"id": {"$in": question_ids}},
+            {"_id": 0, "rightAnswers": 1, "id": 1, "value": 1, "answers": 1, "code": 1, })
+        if questions is None:
+            return None
+        questions = list(questions)
+        if not questions:
+            return None
+        for question in questions:
+            self.__replace_answers_in_question(question)
+            question["multi"] = len(question["rightAnswers"]) > 1
+        return questions
 
 
 data_service = DataService()

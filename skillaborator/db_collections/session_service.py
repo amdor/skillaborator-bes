@@ -11,6 +11,7 @@ class Session:
         self.session_id = session_id
         self.current_score = 0
         self.previous_question_ids = []
+        self.selected_answers = []
         self.ended = False
 
     def parse_dict(self, session_dict):
@@ -42,14 +43,14 @@ class SessionService:
             return session
         return abort(Response('A server error occurred', status=500))
 
-    def get(self, session_id: str, new_session: bool) -> Session:
+    def get(self, session_id: str, new_session=False) -> Session:
         session_dict = self.collection.find_one({"session_id": session_id})
         if session_dict:
-            if not new_session:
-                session = Session(session_id)
-                session.parse_dict(session_dict)
-                return session
-            SessionService.__already_used()
+            if new_session:
+                SessionService.__already_used()
+            session = Session(session_id)
+            session.parse_dict(session_dict)
+            return session
         # TODO check used in one time collection
         return self.__create_new_session(session_id)
 
