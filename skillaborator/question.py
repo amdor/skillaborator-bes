@@ -39,8 +39,10 @@ class Question(Resource):
         args = Question.__parse_args()
         answer_ids = args.get('answerIds')
 
-        new_session = answer_ids is None or len(answer_ids) != 0
+        new_session = answer_ids is None or len(answer_ids) == 0
         session = session_service.get(one_time_code, new_session)
+        if session.ended:
+            abort(Response('This session has already ended', status=400))
 
         # answer received, calculate next score if can
         if answer_ids is not None and len(answer_ids) != 0:
@@ -53,6 +55,8 @@ class Question(Resource):
                                                                           session.current_score)
                 answer_analysis_service.save_answer(
                     last_question_id, answer_ids)
+
+            session.selected_answers.append(answer_ids)
 
         next_level = ScoreService.calculate_next_question_level(session.current_score)
         # get random question on that level
