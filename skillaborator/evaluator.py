@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from flask import Response
-from flask_restful import Resource, reqparse, abort
+from flask_restful import Resource, reqparse, abort, inputs
 
 from skillaborator.data_service import data_service
 from skillaborator.db_collections.answer_analysis_service import answer_analysis_service
@@ -19,7 +21,8 @@ class Evaluator(Resource):
         parser = reqparse.RequestParser()
 
         parser.add_argument('answerId', dest='answerIds', type=str, help='Last question`s chosen answers',
-                            action='append')
+                            action='append', required=False)
+        parser.add_argument('timedOut', type=inputs.boolean, help='Question has timed out', required=False)
         return parser.parse_args(strict=True)
 
     @staticmethod
@@ -55,6 +58,11 @@ class Evaluator(Resource):
             abort(Response('This session has already ended', status=400))
 
         last_question_answers = args.get('answerIds')
+        timed_out = args.get('timedOut')
+        timed_out = timed_out or session.next_timeout < datetime.now()
+        # disregard any answer ids if timed out
+        if timed_out:
+            last_question_answers = []
         final_score = session.current_score
 
         prev_question_count = len(session.previous_question_ids)

@@ -108,6 +108,7 @@ def add_tags(_data_service):
 def get_tags(_data_service):
     _tags = _data_service.question_collection.distinct("tags")
     print(f'{_tags}')
+    return _tags
 
 
 def insert_one_time_codes(_data_service):
@@ -120,7 +121,7 @@ def insert_one_time_codes(_data_service):
         if code_already_used:
             continue
         tags_to_use = one_time_codes_to_insert["tags_to_use"] if len(
-            one_time_codes_to_insert["tags_to_use"]) else get_tags(
+            one_time_codes_to_insert["tags_to_use"]) > 0 else get_tags(
             _data_service)
         print(f'generated id: {generated_id}')
         one_time_code = {

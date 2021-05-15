@@ -91,9 +91,10 @@ class DataService:
         questions = list(questions)
         if not questions:
             return None
-        # return a dict of question id keys and all the non empty right answers
-        return {question.get("id"): [rightAnswer for rightAnswer in question.get("rightAnswers")] for question in
-                questions}
+        # return a dict of question id keys and all the non empty right answers, right answer might be None to create
+        # fake multi choice
+        return {question.get("id"): [rightAnswer for rightAnswer in question.get("rightAnswers") if rightAnswer] for
+                question in questions}
 
     def get_questions(self, question_ids: List[str]):
         questions = self.question_collection.find(
@@ -107,6 +108,7 @@ class DataService:
         for question in questions:
             self.__replace_answers_in_question(question)
             question["multi"] = len(question["rightAnswers"]) > 1
+            question["rightAnswers"] = [rightAnswer for rightAnswer in question.get("rightAnswers") if rightAnswer]
         return questions
 
 

@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from flask import Response, make_response
-from flask_restful import Resource, reqparse, abort
+from flask_restful import Resource, reqparse, abort, inputs
 
 from skillaborator.data_service import data_service
 from skillaborator.db_collections.answer_analysis_service import answer_analysis_service
@@ -26,7 +28,8 @@ class Question(Resource):
         parser = reqparse.RequestParser()
 
         parser.add_argument('answerId', dest='answerIds', type=str, help='Last question`s chosen answers',
-                            action='append')
+                            action='append', required=False)
+        parser.add_argument('timedOut', type=inputs.boolean, help='Question has timed out', required=False)
 
         return parser.parse_args(strict=True)
 
@@ -38,14 +41,21 @@ class Question(Resource):
         """
         args = Question.__parse_args()
         answer_ids = args.get('answerIds')
+        timed_out = args.get('timedOut')
 
-        new_session = answer_ids is None or len(answer_ids) == 0
+        new_session = (answer_ids is None or len(answer_ids) == 0) and timed_out is None
         session = session_service.get(one_time_code, new_session)
         if session.ended:
             abort(Response('This session has already ended', status=400))
 
+        timed_out = timed_out or session.next_timeout < datetime.now()
+        # disregard any answer ids if timed out
+        if timed_out:
+            answer_ids = []
+
         # answer received, calculate next score if can
-        if answer_ids is not None and len(answer_ids) != 0:
+        # we either must have answers or the time must've run out
+        if answer_ids is not None and (len(answer_ids) != 0 or timed_out):
             prev_question_count = len(session.previous_question_ids)
             if prev_question_count == 0:
                 Question.__no_question_found()

@@ -3,13 +3,12 @@ from typing import List
 from skillaborator.data_service import data_service
 
 SCORE_BASE = 10
-LEVEL_TWO_THRESHOLD = 5*SCORE_BASE
-LEVEL_THREE_THRESHOLD = LEVEL_TWO_THRESHOLD + 5*(SCORE_BASE+2)
-LEVEL_FOUR_THRESHOLD = LEVEL_THREE_THRESHOLD + 5*(SCORE_BASE+3)
+LEVEL_TWO_THRESHOLD = 5 * SCORE_BASE
+LEVEL_THREE_THRESHOLD = LEVEL_TWO_THRESHOLD + 5 * (SCORE_BASE + 2)
+LEVEL_FOUR_THRESHOLD = LEVEL_THREE_THRESHOLD + 5 * (SCORE_BASE + 3)
 
 
 class ScoreService:
-
 
     @staticmethod
     def calculate_next_question_level(score: int) -> int:
@@ -38,6 +37,8 @@ class ScoreService:
         """
         question = data_service.get_question_right_answers_and_level(question_id)
         next_score = previous_score
+        if len(answer_ids) == 0:
+            return int(next_score)
         level = question.get("level")
         right_answer_ids = question.get("rightAnswers")
         score_increment = (SCORE_BASE + level) / len(right_answer_ids)

@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from flask import Response
 from flask_restful import abort
 
@@ -13,6 +15,7 @@ class Session:
         self.previous_question_ids = []
         self.selected_answers = []
         self.ended = False
+        self.next_timeout = datetime.now() + timedelta(minutes=1)
 
     def parse_dict(self, session_dict):
         for k, v in session_dict.items():
@@ -55,6 +58,7 @@ class SessionService:
         return self.__create_new_session(session_id)
 
     def save(self, session: Session):
+        session.next_timeout = datetime.now() + timedelta(minutes=1)
         self.collection.replace_one({"session_id": session.session_id}, session.__dict__)
 
     def end(self, session: Session):
