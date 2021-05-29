@@ -2,26 +2,13 @@ import traceback
 from os import environ
 
 from flask import Flask, Response
-from flask_restful import Api, Resource
+from flask_restful import Api
 from pymongo.cursor import Cursor
 from werkzeug.exceptions import HTTPException
 
-from skillaborator.data_service import data_service
 from skillaborator.evaluator import Evaluator
 from skillaborator.question import Question
-
-
-# TODO remove
-class TempCodeService(Resource):
-    def __init__(self):
-        self.collection = data_service.db["one_time_codes"]
-
-    def get(self):
-        cursor: Cursor = self.collection.find({"used": False}, {"code": True, "_id": False}).limit(10)
-        ret = list()
-        for doc in cursor:
-            ret.append(doc["code"])
-        return ret
+from skillaborator.codes import Codes
 
 
 # TODO: don't let errors out
@@ -31,7 +18,7 @@ api = Api(app)
 
 api.add_resource(Question, '/question/<one_time_code>')
 api.add_resource(Evaluator, '/selectedAnswers/<one_time_code>')
-api.add_resource(TempCodeService, '/codes')
+api.add_resource(Codes, '/code')
 
 
 @app.errorhandler(Exception)
