@@ -42,9 +42,8 @@ class ScoreService:
         level = question.get("level")
         right_answer_ids = question.get("rightAnswers")
         score_increment = (SCORE_BASE + level) / len(right_answer_ids)
-        score_decrement = (SCORE_BASE - (level * 2 if 1 < level < SCORE_BASE / 2 else SCORE_BASE)) / len(
-            right_answer_ids)
+        score_decrement = (SCORE_BASE - (level * 2 if 1 < level < SCORE_BASE / 2 else SCORE_BASE))
         for answer_id in answer_ids:
             next_score += score_increment if answer_id in right_answer_ids \
                 else -score_decrement
-        return int(next_score)
+        return max(int(next_score), 0)
