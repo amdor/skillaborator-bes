@@ -16,7 +16,7 @@ from skillaborator.codes import Codes
 app = Flask(__name__)
 api = Api(app)
 
-api.add_resource(Question, '/question/<one_time_code>')
+api.add_resource(Question, '/question/<one_time_code>', '/question')
 api.add_resource(Evaluator, '/selectedAnswers/<one_time_code>')
 api.add_resource(Codes, '/code')
 

@@ -1,5 +1,5 @@
 from os import environ
-from typing import Union, List, Dict
+from typing import Optional, Union, List, Dict
 
 from pymongo import MongoClient
 
@@ -47,7 +47,7 @@ class DataService:
             return None
         return c_list[0]
 
-    def get_question_by_level(self, level: int, previous_question_ids: List[str]):
+    def get_question_by_level(self, level: int, previous_question_ids: List[str], tags: Optional[List[str]]):
         """
         Gets 1 random question matching the level, not matching previous ids
         Computes multi field (true if question has multiple right answers)
@@ -57,7 +57,8 @@ class DataService:
         question_cursor = self.question_collection.aggregate([
             {"$match": {
                 "level": level,
-                "id": {"$nin": previous_question_ids}
+                "id": {"$nin": previous_question_ids},
+                "tags": {"$in": tags}
             }},
             {"$sample": {"size": 1}},
             {"$addFields": {

@@ -35,7 +35,7 @@ class Question(Resource):
 
     # TODO add 'neither' answer dynamically
     @staticmethod
-    def get(one_time_code):
+    def get(one_time_code=None):
         """
         Get a random question calculated by the last question's level
         """
@@ -71,13 +71,14 @@ class Question(Resource):
         next_level = ScoreService.calculate_next_question_level(session.current_score)
         # get random question on that level
         random_question = data_service.get_question_by_level(
-            next_level, session.previous_question_ids)
+            next_level, session.previous_question_ids, session.tags)
         if random_question is None:
             Question.__no_question_found()
         Question.__format_question_texts(random_question)
 
         session.previous_question_ids.append(random_question.get("id"))
 
+        random_question["oneTimeCode"] = session.session_id
         response: Response = make_response(random_question, 200)
 
         session_service.save(session)

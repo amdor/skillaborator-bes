@@ -26,43 +26,24 @@ one_time_codes_to_insert = {"code_count": 20, "tags_to_use": []}
 
 insert_answer = 0
 
-answer_values = ["First",
-                 "Second",
-                 "Third",
-                 "Fourth"]
+answer_values = ["All have click functions",
+                 "Are all draggable",
+                 "Can all fire 'input' event",
+                 "Are not Nodes"]
 
-question_value = "Select acceptable targeting"
+question_value = "(DOM) HTML elements"
 question_level = 2
-question_answers = ["9", "10", "11", "12"]
-right_answers = ["10", ""]
-tags = ['css']
-code = {
-    "value": """
-.error {
-  color: red !important;
-}
+question_answers = ["87", "88", "89", "90"]
+right_answers = ["87", ""]
+tags = ['javascript', 'dom']
 
-.some-dialog {
-  .error {
-    color: red;
-  }
-}
+code = None
 
-#specificError{
-  color: red;
-}
 
-.parent {
-  .some-dialog {
-    .list-item {
-      .error {
-        color: red;
-      }
-    }
-  }
-}""",
-    "language": "css"
-}
+# code = {
+#     "value": """""",
+#     "language": "css"
+# }
 
 
 def get_id_for_collection(collection):
@@ -136,11 +117,27 @@ def insert_one_time_codes(_data_service):
 def remove_sessions(_data_service: DataService):
     _data_service.session_collection.delete_many({})
 
+def remove_used_one_time_codes(_data_service: DataService):
+    _data_service.one_time_codes_collection.delete_many({"used": True})
+
+def remove_demo_sessions_and_one_time_codes(_data_service: DataService):
+    demo_query = {"tags": {"$in": ["demo"]}}
+    _data_service.one_time_codes_collection.delete_many(demo_query)
+    _data_service.session_collection.delete_many(demo_query)
+
 
 if __name__ == '__main__':
     data_service = DataService()
     # insert_answer_or_question(data_service)
     # add_tags(data_service)
     # get_tags(data_service)
-    insert_one_time_codes(data_service)
+    # insert_one_time_codes(data_service)
     # remove_sessions(data_service)
+    # remove_demo_sessions_and_one_time_codes(data_service)
+    
+    
+    # ended_sessions = list(data_service.session_collection.find({"ended": True}))
+    # score = 0
+    # for session in ended_sessions:
+    #     score = score + session["current_score"]
+    # print(score / len(ended_sessions))
