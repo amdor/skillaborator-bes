@@ -10,7 +10,7 @@ and run `python ./skillaborator/server.py`
 
 OR run `python -m skillaborator.server`
 
-##Tests
+## Tests
 Run `nosetests`
 
 This runs tests under tests folder. For further details see setup.cfg.
