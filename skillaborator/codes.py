@@ -1,9 +1,10 @@
+from skillaborator.db_collections.collection_consts import ONE_TIME_CODE_COLLECTION
 from flask_restful import Resource
 from skillaborator.data_service import data_service
 
 class Codes(Resource):
     def __init__(self):
-        self.collection = data_service.db["one_time_codes"]
+        self.collection = data_service.db[ONE_TIME_CODE_COLLECTION]
 
     def get(self):
         cursor: Cursor = self.collection.aggregate([

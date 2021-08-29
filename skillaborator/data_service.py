@@ -1,14 +1,8 @@
 from os import environ
+from skillaborator.db_collections.collection_consts import ANSWER_ANALYSIS_COLLECTION, ANSWER_COLLECTION, DB_NAME, QUESTION_COLLECTION, SESSION_COLLECTION
 from typing import Optional, Union, List, Dict
 
 from pymongo import MongoClient
-
-DB_NAME = 'skillaborator'
-QUESTION_COLLECTION = 'question'
-ANSWER_COLLECTION = 'answer'
-ANSWER_ANALYSIS_COLLECTION = 'answer_analysis'
-SESSION_COLLECTION = 'session'
-
 
 class DataService:
 

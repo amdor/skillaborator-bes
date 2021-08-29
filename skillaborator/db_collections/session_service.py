@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import random
+from skillaborator.db_collections.collection_consts import ONE_TIME_CODE_COLLECTION
 import string
 from typing import Optional
 
@@ -7,9 +8,6 @@ from flask import Response
 from flask_restful import abort
 
 from skillaborator.data_service import data_service
-
-ONE_TIME_CODE_COLLECTION = "one_time_codes"
-
 
 class Session:
     def __init__(self, session_id, tags = []):
@@ -67,11 +65,7 @@ class SessionService:
             return generated_id
         return abort(Response('A server error occurred, could not create session id', status=500))
 
-    def get(self, session_id: Optional[str], new_session=False) -> Session:
-        if(session_id is None):
-            demo_sesseion_id = self.__insert_demo_one_time_code()
-            return self.__create_new_session(demo_sesseion_id)
-
+    def get(self, session_id: str, new_session=False) -> Session:
         session_dict = self.collection.find_one({"session_id": session_id})
         if session_dict:
             if new_session:
@@ -80,6 +74,10 @@ class SessionService:
             session.parse_dict(session_dict)
             return session
         return self.__create_new_session(session_id)
+
+    def get_demo_session(self) -> Session:
+        demo_sesseion_id = self.__insert_demo_one_time_code()
+        return self.__create_new_session(demo_sesseion_id)
 
     def save(self, session: Session):
         session.next_timeout = datetime.now() + timedelta(minutes=1)
