@@ -1,9 +1,9 @@
 from datetime import datetime
+from skillaborator.db_collections.question_service import question_service
 
 from flask import Response
 from flask_restful import Resource, reqparse, abort, inputs
 
-from skillaborator.data_service import data_service
 from skillaborator.db_collections.answer_analysis_service import answer_analysis_service
 from skillaborator.db_collections.session_service import session_service
 from skillaborator.score_service import ScoreService
@@ -33,7 +33,7 @@ class Evaluator(Resource):
         session = session_service.get(one_time_code)
         final_score = session.current_score
         if session.ended:
-            questions_with_right_answers = data_service.get_questions(session.previous_question_ids)
+            questions_with_right_answers = question_service.get_questions(session.previous_question_ids)
             selected_answers = list()
             for i in range(len(session.previous_question_ids)):
                 selected_answers.append(
@@ -80,6 +80,6 @@ class Evaluator(Resource):
         session.selected_answers.append(last_question_answers)
         session_service.end(session)
 
-        right_answers_by_questions = data_service.get_questions_right_answers(
+        right_answers_by_questions = question_service.get_questions_right_answers(
             session.previous_question_ids)
         return {"rightAnswersByQuestions": right_answers_by_questions, "score": final_score}, 200

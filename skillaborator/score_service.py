@@ -1,6 +1,6 @@
+from skillaborator.db_collections.question_service import question_service
 from typing import List
 
-from skillaborator.data_service import data_service
 
 SCORE_BASE = 10
 LEVEL_TWO_THRESHOLD = 5 * SCORE_BASE
@@ -35,7 +35,7 @@ class ScoreService:
         :param previous_score: the starting score to modify
         :return: new score
         """
-        question = data_service.get_question_right_answers_and_level(question_id)
+        question = question_service.get_question_right_answers_and_level(question_id)
         next_score = previous_score
         if len(answer_ids) == 0:
             return int(next_score)

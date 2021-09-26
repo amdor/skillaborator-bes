@@ -3,6 +3,7 @@ import string
 
 from flask.json import dumps
 from pymongo import MongoClient, DESCENDING, collation
+from ssl import CERT_NONE
 
 DB_NAME = 'skillaborator'
 QUESTION_COLLECTION = 'question'
@@ -22,28 +23,31 @@ class DataService:
         self.session_collection = self.db[SESSION_COLLECTION]
 
 
-one_time_codes_to_insert = {"code_count": 20, "tags_to_use": []}
+one_time_codes_to_insert = {"code_count": 20, "tags_to_use": [], "offered_to": "violet consulting"}
 
 insert_answer = 0
 
-answer_values = ["All have click functions",
-                 "Are all draggable",
-                 "Can all fire 'input' event",
-                 "Are not Nodes"]
+answer_values = ["The script will be fetched in parallel to document parsing",
+"The script will be evalutated as soon as available",
+"The script will be evaluated after document parsing",
+"The script will be fetched blocking document parsing"]
 
-question_value = "(DOM) HTML elements"
-question_level = 2
-question_answers = ["87", "88", "89", "90"]
-right_answers = ["87", ""]
-tags = ['javascript', 'dom']
+question_value = "List all true for this HTML snippet."
+question_level = 3
+question_answers = ["91", "92", "93", "94"]
+right_answers = ["91", "93"]
+tags = ['html']
 
-code = None
+# code = None
 
 
-# code = {
-#     "value": """""",
-#     "language": "css"
-# }
+code = {
+    "value": """<head>
+    <script type="text/javascript" src="es5-javascript.js" defer>
+    </script>
+</head>""",
+    "language": "html"
+}
 
 
 def get_id_for_collection(collection):
@@ -88,11 +92,10 @@ def add_tags(_data_service):
 
 def get_tags(_data_service):
     _tags = _data_service.question_collection.distinct("tags")
-    print(f'{_tags}')
     return _tags
 
 
-def insert_one_time_codes(_data_service):
+def insert_one_time_codes(_data_service: DataService):
     global_i = 0
     i = 0
     while i < one_time_codes_to_insert['code_count'] and global_i < 200:
@@ -110,6 +113,9 @@ def insert_one_time_codes(_data_service):
             "tags": tags_to_use,
             "used": False
         }
+        offered_to = one_time_codes_to_insert["offered_to"]
+        if offered_to is not None:
+            one_time_code["offeredTo"] = offered_to
         _data_service.one_time_codes_collection.insert_one(one_time_code)
         i = i + 1
 
@@ -118,7 +124,7 @@ def remove_sessions(_data_service: DataService):
     _data_service.session_collection.delete_many({})
 
 def remove_used_one_time_codes(_data_service: DataService):
-    _data_service.one_time_codes_collection.delete_many({"used": True})
+    _data_service.one_time_codes_collection.delete_many({})
 
 def remove_demo_sessions_and_one_time_codes(_data_service: DataService):
     demo_query = {"tags": {"$in": ["demo"]}}
@@ -134,10 +140,9 @@ if __name__ == '__main__':
     # insert_one_time_codes(data_service)
     # remove_sessions(data_service)
     # remove_demo_sessions_and_one_time_codes(data_service)
+    # remove_used_one_time_codes(data_service)
     
-    
-    # ended_sessions = list(data_service.session_collection.find({"ended": True}))
-    # score = 0
-    # for session in ended_sessions:
-    #     score = score + session["current_score"]
-    # print(score / len(ended_sessions))
+
+    ids = data_service.one_time_codes_collection.find({"offeredTo": "grafton"}).distinct("code")
+    for id in ids:
+        print(id)

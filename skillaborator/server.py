@@ -6,9 +6,9 @@ from flask_restful import Api
 from pymongo.cursor import Cursor
 from werkzeug.exceptions import HTTPException
 
-from skillaborator.evaluator import Evaluator
-from skillaborator.question import Question
-from skillaborator.codes import Codes
+from skillaborator.api.evaluator import Evaluator
+from skillaborator.api.question import Question
+from skillaborator.api.linkedin_auth import LinkedInAuth
 
 
 # TODO: don't let errors out
@@ -18,6 +18,7 @@ api = Api(app)
 
 api.add_resource(Question, '/question/<one_time_code>', '/question')
 api.add_resource(Evaluator, '/selectedAnswers/<one_time_code>')
+api.add_resource(LinkedInAuth, '/linkedin-login')
 # api.add_resource(Codes, '/code')
 
 
@@ -36,7 +37,7 @@ def handle_exception(e):
 
 @app.after_request
 def add_cors_after_request(response: Response):
-    allow_origin = environ.get("ALLOW_ORIGIN", "http://api.app.localhost:4200")
+    allow_origin = environ.get("ALLOW_ORIGIN", "http://localhost:4200")
     response.headers['Access-Control-Allow-Origin'] = allow_origin
     response.headers.add('Access-Control-Allow-Methods',
                          'GET,PUT,POST,DELETE,OPTIONS')

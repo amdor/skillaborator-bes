@@ -1,3 +1,4 @@
+from pymongo.cursor import Cursor
 from skillaborator.db_collections.collection_consts import ONE_TIME_CODE_COLLECTION
 from flask_restful import Resource
 from skillaborator.data_service import data_service
