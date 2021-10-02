@@ -1,21 +1,23 @@
 import random
-from skillaborator.db_collections import question_service
+from typing import Optional
+from skillaborator import data_service
+from skillaborator.db_collections.question_service import question_service
 import string
 from flask_restful import abort
 from pymongo.cursor import Cursor
 from werkzeug.wrappers import Response
-from skillaborator.data_service import DataService
+from skillaborator.data_service import DataService, data_service
 
 
 class OneTimeCodeService:
     def __init__(self):
-        self.collection = DataService.one_time_code_collection
+        self.collection = data_service.one_time_code_collection
 
     @staticmethod
     def __generate_id():
         return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(8))
 
-    def create_one_time_code(self):
+    def create_one_time_code(self, email: str) -> Optional[str]:
         tags = question_service.get_all_tags()
         correct_id_generated = False
         global_i = 0
@@ -30,9 +32,10 @@ class OneTimeCodeService:
                 "code": generated_id,
                 "tags": tags,
                 "used": False,
-                "offeredTo": "B2C"
+                "offeredTo": email if email is not None else "B2C"
             }
             self.collection.insert_one(one_time_code)
+            return generated_id
 
    
     def create_demo_one_time_code(self):
@@ -51,10 +54,13 @@ class OneTimeCodeService:
             abort(Response('A server error occurred, could not create session id', status=500))
         return generated_id
 
-    def find_one_time_code(self, session_id: string):
+    def find_one_time_code(self, session_id: str):
         return self.collection.find_one({"code": session_id})
+    
+    def find_unused_code(self, offered_to: str):
+        return self.collection.find_one({"offeredTo": offered_to, "used": False})
 
-    def set_one_time_code_used(self, session_id:string):
+    def set_one_time_code_used(self, session_id: str):
         return self.collection.update_one({"code": session_id}, {"$set": {"used": True}})
 
     def get_one_time_code(self):
