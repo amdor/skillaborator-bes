@@ -1,7 +1,7 @@
 import random
 from typing import Optional
 from skillaborator import data_service
-from skillaborator.db_collections.question_service import question_service
+from skillaborator.db_collections import question_service
 import string
 from flask_restful import abort
 from pymongo.cursor import Cursor

@@ -9,6 +9,7 @@ from werkzeug.exceptions import HTTPException
 from skillaborator.api.evaluator import Evaluator
 from skillaborator.api.question import Question
 from skillaborator.api.linkedin_auth import LinkedInAuth
+from skillaborator.api.user_code import UserCode
 
 
 # TODO: don't let errors out
@@ -19,6 +20,7 @@ api = Api(app)
 api.add_resource(Question, '/question/<one_time_code>', '/question')
 api.add_resource(Evaluator, '/selectedAnswers/<one_time_code>')
 api.add_resource(LinkedInAuth, '/linkedin-login')
+api.add_resource(UserCode, '/new-code')
 # api.add_resource(Codes, '/code')
 
 

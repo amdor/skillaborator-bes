@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from skillaborator.db_collections.one_time_code_service import one_time_code_service
+from skillaborator.db_collections import one_time_code_service
 
 from flask import Response
 from flask_restful import abort

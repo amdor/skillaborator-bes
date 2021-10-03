@@ -1,11 +1,9 @@
 from datetime import datetime
-from skillaborator.db_collections.question_service import question_service
+from skillaborator.db_collections import answer_analysis_service, session_service, question_service
 
 from flask import Response, make_response
 from flask_restful import Resource, reqparse, abort, inputs
 
-from skillaborator.db_collections.answer_analysis_service import answer_analysis_service
-from skillaborator.db_collections.session_service import session_service
 from skillaborator.score_service import ScoreService
 
 
