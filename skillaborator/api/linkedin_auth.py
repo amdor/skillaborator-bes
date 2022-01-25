@@ -29,6 +29,6 @@ class LinkedInAuth(Resource):
         token = resp.json()['access_token']
         get_resp = get("https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))", headers={"Authorization": f"Bearer {token}"})
         email = get_resp.json()["elements"][0]["handle~"]["emailAddress"]
-        auth_service.save_login(email, token)
-        return make_response({"email": email, "token": token}, 200)
+        next_skillaboration_start = auth_service.save_login(email, token)
+        return make_response({"email": email, "token": token, "nextSkillaborationStart": next_skillaboration_start}, 200)
     
