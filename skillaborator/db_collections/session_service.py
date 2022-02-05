@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from skillaborator.db_collections import one_time_code_service
+from .one_time_code_service import one_time_code_service_instance
 
 from flask import Response
 from flask_restful import abort
 
-from skillaborator.data_service import data_service
+from skillaborator.data_service import data_service_instance
 
 class Session:
     def __init__(self, session_id, tags = []):
@@ -23,25 +23,25 @@ class Session:
 
 class SessionService:
     def __init__(self):
-        self.collection = data_service.session_collection
+        self.collection = data_service_instance.session_collection
 
     @staticmethod
     def __already_used():
         abort(Response('Session already used', status=401))
 
     def __create_new_session(self, session_id) -> Session:
-        code = one_time_code_service.find_one_time_code()
+        code = one_time_code_service_instance.find_one_time_code(session_id)
         if not code:
             abort(Response('Invalid session', status=404))
-        if code["used"]:
+        if code.used:
             # somehow not in session collection, but already used
             SessionService.__already_used()
 
-        session = Session(session_id, code["tags"])
+        session = Session(session_id, code.tags)
         insert_result = self.collection.insert_one(session.__dict__)
         if not insert_result.acknowledged:
             abort(Response('A server error occurred', status=500))
-        one_time_code_service.set_one_time_code_used(session_id)
+        one_time_code_service_instance.set_one_time_code_used(session_id)
         return session
     
     def get(self, session_id: str, new_session=False) -> Session:
@@ -55,7 +55,7 @@ class SessionService:
         return self.__create_new_session(session_id)
 
     def get_demo_session(self) -> Session:
-        demo_sesseion_id = one_time_code_service.create_demo_one_time_code()
+        demo_sesseion_id = one_time_code_service_instance.create_demo_one_time_code()
         session_dict = self.collection.find_one({"session_id": demo_sesseion_id})
         if session_dict:
             self.collection.delete_one({"session_id": demo_sesseion_id})
@@ -70,4 +70,4 @@ class SessionService:
         self.save(session)
 
 
-session_service = SessionService()
+session_service_instance = SessionService()

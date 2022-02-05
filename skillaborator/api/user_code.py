@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask.helpers import make_response
-from skillaborator.db_collections import auth_service, one_time_code_service
+from skillaborator.db_collections import auth_service_instance, one_time_code_service_instance
 
 
 class UserCode(Resource):
@@ -21,10 +21,12 @@ class UserCode(Resource):
         args = UserCode.__parse_args()
         email = args.get("email")
         token = args.get("token")
-        can_start_new_eval = auth_service.can_start_new_evaluation(email, token)
+        can_start_new_eval = auth_service_instance.can_start_new_evaluation(email, token)
         if not can_start_new_eval:
             return "Too early", 403
-        new_code = one_time_code_service.find_unused_code(email)
+        new_code = one_time_code_service_instance.find_unused_code(email)
         if new_code is None:
-            new_code = one_time_code_service.create_one_time_code(email)
-        return make_response({"oneTimeCode": new_code}, 200)
+            new_code = one_time_code_service_instance.create_one_time_code(email)
+        if new_code:
+            auth_service_instance.save_skillaboration_start(email)
+        return make_response({"oneTimeCode": new_code.code}, 200)

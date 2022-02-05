@@ -1,4 +1,5 @@
 from os import environ
+from pymongo.cursor import Cursor
 from skillaborator.db_collections.collection_consts import ANSWER_ANALYSIS_COLLECTION, ANSWER_COLLECTION, AUTH_COLLECTION, DB_NAME, ONE_TIME_CODE_COLLECTION, QUESTION_COLLECTION, SESSION_COLLECTION
 
 from pymongo import MongoClient, collection
@@ -17,7 +18,7 @@ class DataService:
         self.auth_collection: collection.Collection = self.db[AUTH_COLLECTION]
 
     @staticmethod
-    def first_or_none(cursor):
+    def first_or_none(cursor: Cursor):
         if cursor is None:
             return None
         c_list = list(cursor)
@@ -25,4 +26,4 @@ class DataService:
             return None
         return c_list[0]
 
-data_service = DataService()
+data_service_instance = DataService()

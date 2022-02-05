@@ -1,5 +1,5 @@
 from datetime import datetime
-from skillaborator.db_collections import answer_analysis_service, session_service, question_service
+from skillaborator.db_collections import answer_analysis_service_instance, session_service_instance, question_service_instance
 
 from flask import Response, make_response
 from flask_restful import Resource, reqparse, abort, inputs
@@ -22,7 +22,7 @@ class Question(Resource):
                 '\\n', '\n').replace('\\t', '\t')
 
     @staticmethod
-    def __parse_args():
+    def __parse_args() -> dict:
         parser = reqparse.RequestParser()
 
         parser.add_argument('answerId', dest='answerIds', type=str, help='Last question`s chosen answers',
@@ -42,7 +42,7 @@ class Question(Resource):
         timed_out = args.get('timedOut')
 
         new_session = (answer_ids is None or len(answer_ids) == 0) and timed_out is None
-        session = session_service.get(one_time_code, new_session)
+        session = session_service_instance.get(one_time_code, new_session)
         if session.ended:
             abort(Response('This session has already ended', status=400))
 
@@ -61,14 +61,14 @@ class Question(Resource):
                 last_question_id = session.previous_question_ids[prev_question_count - 1]
                 session.current_score = ScoreService.calculate_next_score(last_question_id, answer_ids,
                                                                           session.current_score)
-                answer_analysis_service.save_answer(
+                answer_analysis_service_instance.save_answer(
                     last_question_id, answer_ids)
 
             session.selected_answers.append(answer_ids)
 
         next_level = ScoreService.calculate_next_question_level(session.current_score)
         # get random question on that level
-        random_question = question_service.get_question_by_level(
+        random_question = question_service_instance.get_question_by_level(
             next_level, session.previous_question_ids, session.tags)
         if random_question is None:
             Question.__no_question_found()
@@ -79,5 +79,5 @@ class Question(Resource):
         random_question["oneTimeCode"] = session.session_id
         response: Response = make_response(random_question, 200)
 
-        session_service.save(session)
+        session_service_instance.save(session)
         return response

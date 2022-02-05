@@ -1,11 +1,11 @@
 
 from typing import Dict, List, Optional, Union
-from skillaborator.data_service import DataService, data_service
+from skillaborator.data_service import DataService, data_service_instance
 
 
 class QuestionService:
     def __init__(self):
-        self.collection = data_service.question_collection
+        self.collection = data_service_instance.question_collection
 
     def __get_partial_question(self, question_id: str, right_answers=0, level=0):
         return self.collection.find_one(
@@ -16,7 +16,7 @@ class QuestionService:
         """
         Finds answers in collection by ids and replaces the original id array in questions with answer dicts
         """
-        answers = data_service.answer_collection.find(
+        answers = data_service_instance.answer_collection.find(
             {"id": {"$in": question.get("answers", list())}},
             {"_id": 0}
         )
@@ -89,7 +89,4 @@ class QuestionService:
             question["rightAnswers"] = [rightAnswer for rightAnswer in question.get("rightAnswers") if rightAnswer]
         return questions
 
-    def get_all_tags():
-        return data_service.question_collection.distinct("tags")
-
-question_service = QuestionService()
+question_service_instance = QuestionService()
