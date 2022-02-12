@@ -1,10 +1,10 @@
-from skillaborator.data_service import data_service
+from skillaborator.data_service import data_service_instance
 
 
 class AnswerAnalysisService:
 
     def __init__(self):
-        self.collection = data_service.answer_analysis_collection
+        self.collection = data_service_instance.answer_analysis_collection
 
     def save_answer(self, question_id, answer_ids):
         for answer_id in answer_ids:
@@ -21,4 +21,4 @@ class AnswerAnalysisService:
             )
 
 
-answer_analysis_service = AnswerAnalysisService()
+answer_analysis_service_instance = AnswerAnalysisService()

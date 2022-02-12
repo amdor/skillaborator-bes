@@ -1,13 +1,10 @@
 from datetime import datetime, timedelta
-import random
-from skillaborator.db_collections.collection_consts import ONE_TIME_CODE_COLLECTION
-import string
-from typing import Optional
+from .one_time_code_service import one_time_code_service_instance
 
 from flask import Response
 from flask_restful import abort
 
-from skillaborator.data_service import data_service
+from skillaborator.data_service import data_service_instance
 
 class Session:
     def __init__(self, session_id, tags = []):
@@ -26,45 +23,27 @@ class Session:
 
 class SessionService:
     def __init__(self):
-        self.collection = data_service.session_collection
-        self.one_time_code_collection = data_service.db[ONE_TIME_CODE_COLLECTION]
+        self.collection = data_service_instance.session_collection
 
     @staticmethod
     def __already_used():
         abort(Response('Session already used', status=401))
 
     def __create_new_session(self, session_id) -> Session:
-        code = self.one_time_code_collection.find_one({"code": session_id})
+        code = one_time_code_service_instance.find_one_time_code(session_id)
         if not code:
             abort(Response('Invalid session', status=404))
-        if code["used"]:
+        if code.used:
             # somehow not in session collection, but already used
             SessionService.__already_used()
 
-        session = Session(session_id, code["tags"])
+        session = Session(session_id, code.tags)
         insert_result = self.collection.insert_one(session.__dict__)
-        if insert_result.acknowledged:
-            self.one_time_code_collection.update_one({"code": session_id}, {"$set": {"used": True}})
-            return session
-        return abort(Response('A server error occurred', status=500))
-
-    def __insert_demo_one_time_code(self):
-        generated_id = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(8))
-        code_already_used = list(self.one_time_code_collection.find({"code": generated_id}))
-        if code_already_used:
-            self.one_time_code_collection.delete_one({"code": generated_id})
-            self.collection.delete_one({"session_id": generated_id})
-        tags_to_use = ["demo"]
-        one_time_code = {
-            "code": generated_id,
-            "tags": tags_to_use,
-            "used": False
-        }
-        insert_result = self.one_time_code_collection.insert_one(one_time_code)
-        if insert_result.acknowledged:
-            return generated_id
-        return abort(Response('A server error occurred, could not create session id', status=500))
-
+        if not insert_result.acknowledged:
+            abort(Response('A server error occurred', status=500))
+        one_time_code_service_instance.set_one_time_code_used(session_id)
+        return session
+    
     def get(self, session_id: str, new_session=False) -> Session:
         session_dict = self.collection.find_one({"session_id": session_id})
         if session_dict:
@@ -76,7 +55,10 @@ class SessionService:
         return self.__create_new_session(session_id)
 
     def get_demo_session(self) -> Session:
-        demo_sesseion_id = self.__insert_demo_one_time_code()
+        demo_sesseion_id = one_time_code_service_instance.create_demo_one_time_code()
+        session_dict = self.collection.find_one({"session_id": demo_sesseion_id})
+        if session_dict:
+            self.collection.delete_one({"session_id": demo_sesseion_id})
         return self.__create_new_session(demo_sesseion_id)
 
     def save(self, session: Session):
@@ -88,4 +70,4 @@ class SessionService:
         self.save(session)
 
 
-session_service = SessionService()
+session_service_instance = SessionService()
