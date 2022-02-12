@@ -16,6 +16,7 @@ class LinkedInAuth(Resource):
         parser.add_argument('grant_type', type=str, required=True, location="form")
         parser.add_argument('client_secret', type=str, required=True, location="form")
         parser.add_argument('redirect_uri', type=str, required=True, location="form")
+        return parser.parse_args(strict=True)
 
     @staticmethod
     def __parse_get_args() -> dict:
