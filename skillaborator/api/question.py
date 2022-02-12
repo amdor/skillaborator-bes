@@ -42,7 +42,11 @@ class Question(Resource):
         timed_out = args.get('timedOut')
 
         new_session = (answer_ids is None or len(answer_ids) == 0) and timed_out is None
-        session = session_service_instance.get(one_time_code, new_session)
+        if new_session == True and one_time_code is None:
+            session = session_service_instance.get_demo_session()
+        else:
+            session = session_service_instance.get(one_time_code, new_session)
+
         if session.ended:
             abort(Response('This session has already ended', status=400))
 
